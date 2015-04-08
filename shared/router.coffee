@@ -1,13 +1,20 @@
 Router.map ->
 	# This template is rendered when the user doesn't specify a path
-	this.route "Main", path: "/" 
+	this.route "Posts",
+		path: ['/', '/posts']
+		waitOn: ->
+			Meteor.subscribe "posts"
+		data: ->
+			if this.ready()
+				posts: posts_collection.find()
+			
 	
 	# show details about a single post
 	this.route "PostDetails", # we can re-use the template because it is still expecting a single post object with the same attributes as when called from the "Main" template
-		path: "/post/:_id"
+		path: "/posts/:_id"
 		waitOn: ->
-			[ Meteor.subscribe('blog_posts'), Meteor.subscribe('comments') ]
+			[ Meteor.subscribe('posts'), Meteor.subscribe('comments') ]
 		data: ->
 			if this.ready()
-				post: blog_posts.findOne(this.params._id)
-				comments: comments.find(post_id: this.params._id)
+				post: posts_collection.findOne(this.params._id)
+				comments: comments_collection.find(post_id: this.params._id)

@@ -1,2 +1,2 @@
-@blog_posts = new Mongo.Collection "blog_posts"
-@comments = new Mongo.Collection "comments"
+@posts_collection = new Mongo.Collection "posts"
+@comments_collection = new Mongo.Collection "comments"

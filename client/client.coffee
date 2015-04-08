@@ -1,13 +1,4 @@
 
-
-blog_posts_subscription = Meteor.subscribe "blog_posts"
-
-
-Template.Main.helpers
-	posts: ->
-		if blog_posts_subscription.ready()
-			blog_posts.find()
-
 # Available events are documented here: http://docs.meteor.com/#/full/eventmaps
 Template.CreatePost.events
 	'submit #create_post': (event)-> 
