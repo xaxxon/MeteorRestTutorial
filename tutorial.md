@@ -234,9 +234,19 @@ You should see a listing of the posts you just manually created.
 
 This is where I stopped.
 
+## Automatically adding timestamps
 
+## Adding comments to a post
 
+## Adding user accounts
 
+### accounts-ui
+Nothing wrong with accounts-ui, specifically, but its customization is limited
+
+### Where you can access user information
+#### In templates
+#### In code
+##### Callbacks
 
 
 
