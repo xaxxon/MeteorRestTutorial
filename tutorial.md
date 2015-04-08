@@ -157,6 +157,73 @@ This creates a named datafeed that clients can subscribe to.  As we get started,
 
 ## Create client code to show the posts
 
+### Iron Router
+Iron Router is how you map URL paths to your templates.  We want `/paths` to be the url to show all the Posts, so in a directory called shared 
+
+```bash
+> mkdir shared
+```
+
+we create a file called router.coffee with the following:
+
+```coffeescript
+Router.map ->
+	# This template is rendered when the user doesn't specify a path
+	this.route "Posts",
+		path: ['/', '/posts']
+		waitOn: ->
+			Meteor.subscribe "posts"
+		data: ->
+			if this.ready()
+				posts: posts_collection.find()
+```
+
+This looks a little complicated, but it's not too bad.
+
+`Router.map ->` just gets us started.  As you add more routes, you'll just add to the section below it.
+
+`this.route "Posts"` creates a route which will display the Posts template we created earlier.  This route will match when the URL path is /posts or just / (for convenience for us and our users).  
+
+`waitOn` allows us to specify what data is needed for this template to be rendered.  In this case, we need to subscribe to the "posts" data feed we set up earlier on the server.
+
+`data` is where we set up the data to be used in the dynamic portion of our templates.  In this case, remember the `{{#each posts}}` loop in our `Posts` template?  This is where we populate the posts variable.  Once the data is available on the client (remember, we subscribed to the data, but that doens't mean that it's all been received), we get all the results into an array (actually a database cursor for efficiency, but `#each` is smart enough to handle that).
+
+Now, when the template renders, it will have all the data it needs.  Except, our database is empty.
+
+## meteor.shell
+Meteor's shell command is really cool.  It gives you an interactive javascript prompt into your *running* server process.  This means you have access to everything your server code has access to, but you can poke around in real time.
+
+Right now, we need some blog posts so our client can actually render stuff for us.  In another terminal (remember, meteor still has to be running), run the following:
+
+```bash
+> meteor shell
+```
+
+Note: if you get the error: `Server unavailable (waiting to reconnect)` that means you're not running meteor (the server) right now.  Go to another terminal and type:
+
+```bash
+> meteor
+```
+
+and try running `meteor shell` again.
+
+Now, let's look around in the database a little:
+
+```javascript
+posts_collection.find().count()
+```
+should return 0 - because you haven't created any posts yet.  `find()` without any parameters returns every document in the collection.  
+
+```javascript
+posts_collection.insert({title: 'test title', body: 'test body'})
+```
+It should print an alpha-numeric string.  That's the ID of the newly created document.  Every document has a unique ID that can be used to easily and quickly refer to it.  
+
+Create a few more if you want, but when you're done, pull up your web browser and let's try it out: http://localhost:3000/posts
+
+You should see a listing of the posts you just manually created.
+
+## Creating blog posts from your browser
 
 
 
