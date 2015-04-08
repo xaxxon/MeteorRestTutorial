@@ -2,16 +2,19 @@
 ## Learning Without Training Wheels
 
 There are a lot of meteor tutorials out there, but once you get through them, 
-you're left with an application that cna't grow.  It sends too much data around,
+you're left with an application that can't grow.  It sends too much data around,
 it lets anyone access anything, and there is no real organization to expand upon.  
 
 The point of this tutorial is to get you started down the path of writing the basis of a
 "real" application the "right way" from the beginning.  
 
-NOTE: This tutorial uses coffeescript, a pseudo-language that is compiled into javascript on the server side before it is sent to the web browser.  I find it to be much more elegant and easier to understand than javascript.  Even if you don't know coffeescript, you should be able to follow the examples well enough to understand what's going on.  More information about coffeescript is here: http://coffeescript.org/
+NOTE: This tutorial uses coffeescript, a language that is compiled into javascript on the server side before it is sent to the web browser.  I find it to be much more elegant and easier to understand than javascript.  Even if you don't know coffeescript or don't care for it, you should be able to follow the examples well enough to understand what's going on.  More information about coffeescript is here: http://coffeescript.org/
 
 ## Install Meteor
-Everything you need is right here: http://docs.meteor.com/#/full/quickstart
+Everything you need to install meteor is right here: http://docs.meteor.com/#/full/quickstart
+
+While meteor is supported on Windows, the instructions below are intended for UNIX/OS X.  You will have to
+make changes to any command-line commands for windows to perform the equivalent action.  
 
 ## Create your project
 (The following command automatically makes its own subdirectory, so there's no need for you to do that ahead of time.)
@@ -22,14 +25,14 @@ Creates a subdirectory called BlogMaker with a few files to create a small sampl
 subdirectory which contains all the information about your project that meteor needs to run it.
 
 ## Run the sample project
-In the BlogMaker directory, simply type:
+In the BlogMaker directory, start the webserver by typing:
 ```bash
 > meteor
 ```
 and wait for it to say
 > => App running at: http://localhost:3000/
 
-Now, point your web browser at http://localhost:3000/ and you should see a button press counting app.
+Now, point your web browser at http://localhost:3000/ and you should see a button press counting app.  Press the button to your heart's content.
 
 ## Now delete the sample app
 We're going to start from scratch
@@ -57,8 +60,8 @@ differently).  Surprisingly this is not part of the core functionality of Meteor
 ## Start with some HTML
 
 For files that only need to go to the web browser, we will put them in a subdirectory called `client`.  Meteor
-understands this name and won't load any files under a client directory into the server.  Vice-versa for
-subdirectories named `server`.  This is not only for subdirectories off the root directory, but anywhere in the app.
+understands this directory name and won't load any files under a client directory into the server.  Vice-versa for
+subdirectories named `server`.  `client` and `server` subdirectories can be used anywhere in the directory structure to limit access to certain content.
 
 ```bash
 > mkdir -p client/html
@@ -80,20 +83,17 @@ We start out just like a normal HTML file...
 ...but we leave the body empty.  This will get filled in depending on what page we want to display.  
 
 Next, we will create our first Meteor template.  A template is the primary unit of content in Meteor.  Most
-everything you do in Meteor will revolve around Templates.  A template looks just like any other HTML element
-and has one critical attribute, it's name.  In your code as well as your HTML you will refer to the template by this
-case-sensitive name.
+everything you do in Meteor will revolve around templates.  Creating a template looks just like any other HTML element and has one critical attribute: it's name.  In your code as well as your HTML you will refer to the template by this case-sensitive name.
 
 Our first template will be responsible for displaying the contents of a single blog post:
 ```HTML
-<!-- Shows a single blog posting, just the id, title, and body - no comments or metadata -->
+<!-- Shows a single blog posting, the title, and body -->
 <template name='Post'>
 	<div class='post_title'>{{title}}</div>
 	<div class='post_body'>{{body}}</div>
 </template>
 ```
-All the curly braces are bound to look a little strange.  That's where the dynamic portions of the template come
-out.
+Mostly normal HTML, but the curly braces are bound to look a little strange.  That's where the dynamic portions of the template are.
 
 Templates in Meteor use a system called Spacebars
 (https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md) for inserting dynamic content into HTML.
@@ -102,9 +102,7 @@ You can recognize Spacebars code by the double curly braces which begin and end 
 In this case, the section inside the Spacebars blocks are simply replaced with the value of the variable when the
 template is rendered.
 
-
-
-Now, we make a Template to tie both of these together to create a page which displays existing blog posts and allows creation of a new one.
+This template only shows one blog posting, though.  We want a page that shows them all.  Create another template in the same file:
 
 ```HTML
 <template name='Posts'>
@@ -114,29 +112,28 @@ Now, we make a Template to tie both of these together to create a page which dis
 </template>
 ```
 
-In this case, our template expects us to provide it with an array of posts in the `posts` variable, which it will iterate over and for each element of the array, render an instance of the `Post` template we previously created.
+In this case, our template expects us to provide it with an array of posts in the `posts` variable.  Meteor will iterate over and each element of the array and render an instance of the `Post` template we previously created.
 
 `>TemplateName` is the Spacebars instruction to render the template called `TemplateName`
 
 ## Meteor and databases
-Meteor uses MongoDB (https://www.mongodb.org/) for itsdatabase.  If you're not familiar with No-SQL databases, you
+Meteor uses MongoDB (https://www.mongodb.org/) for its database.  If you're not familiar with No-SQL databases, you
 basically just toss an object into them with whatever attributes you want on them.  There is no need for any schema.
 
-In Meteor, both the client and the server appear to have connections to the database.  However, on the client, it's *complicated*.  Obviously, you can't wait for the entire database to download to every client before your webpage shows content to the user.  It would take forever and the bandwidth usage would be astronomical.  To manage this, the client must subscribe to certain feeds the server provides.  This will populate the collection on the client side with only the necessary data.  However, getting the data to the client is asynchronous, so after you ask for the data to be sent to the client, you have to make sure it's done before you start using it.  
-
-Also, the client has no write access to the database.  Any writes need to go through sanity checks on the server, so we will create special remote-execution methods to allow the client to perform approved changes to the database.
+In Meteor, both the client and the server appear to have connections to the database.  On the server, it works just as you'd expect.  However, on the client, it's *complicated*.  Obviously, you can't send the entire database to the every client - it would take forever and the bandwidth usage would be astronomical.  To manage this, the client must subscribe to certain feeds the server provides.  This will populate the collection on the client side with only the necessary data for the templates to be rendered.  The thing to keep in mind, however, is that getting the data to the client is asynchronous.  After you ask for the data to be sent to the client, you have to make sure it's done before you start using it.  
 
 ## Create server code to manage our database
 
-Mongo allows you to divide up your data into multiple collections.  We will have a collection called "posts" for our blog posts.  Since both our client and our server will need access to these collections, we need to define the variable somewhere they can both see.  Create a subdirectory called `shared`.
+Mongo divides data into multiple sections called "collections".  We will have a collection called "posts" for our blog posts.  Since both our client and our server will need access to these collections, we need to define the variable somewhere they can both see.  Create a subdirectory called `shared`.  (Shared is not a special name, but any directory that't not "client" or "server" is sent to both, shared ends up being shared.)
+
 ```bash
 > mkdir shared
 ```
-In a file called shared.coffee, add the following line:
+In a file called `shared/shared.coffee`, add the following line:
 ```coffeescript
 @posts_collection = new Mongo.Collection "posts"
 ```
-This creates a variable called `posts_collection` that allows both the client and server access to the collection named `posts`.  While it is allowed, you should not put spaces in your collection names.  You're reading my tutorial, you'll just have to trust me on this one.
+This creates a variable called `posts_collection` that allows both the client and server access to the collection named `posts`.  While it is allowed, you should not put spaces in your collection names.  You're reading my tutorial, you'll just have to trust me on this one.  It is a PITA in certain circumstances.
 
 (The @ sign before it is a coffeescript-ism that lets us use the variable in both the web browser and in an interactive server command prompt we'll use later - don't worry about the `@`, but it's not a typo)
 
@@ -146,25 +143,19 @@ Create a `server` subdirectory
 ```bash
 > mkdir server
 ```
-Create a file `server.coffee` and add the following:
+Create a file `server/server.coffee`  and add the following:
 
 ```coffeescript
 Meteor.publish "posts", ->
 	posts_collection.find()
 ```
 
-This creates a named datafeed that clients can subscribe to.  As we get started, when a client asks to get posts, we will send all of them.  Later we may choose to limit to some number, or further filter by author, but for now, we'll send them all.
+This creates a named datafeed that clients can subscribe to.  As we get started, when a client asks to get posts, we will send all of them.  Later we may choose to limit to some number or filter by author, but for now, we'll send everything.
 
 ## Create client code to show the posts
 
 ### Iron Router
-Iron Router is how you map URL paths to your templates.  We want `/paths` to be the url to show all the Posts, so in a directory called shared 
-
-```bash
-> mkdir shared
-```
-
-we create a file called router.coffee with the following:
+Iron Router is how you map URL paths to your templates.  We want `/paths` to be the url to show all the Posts. Create a file called `shared/router.coffee` with the following:
 
 ```coffeescript
 Router.map ->
@@ -182,11 +173,15 @@ This looks a little complicated, but it's not too bad.
 
 `Router.map ->` just gets us started.  As you add more routes, you'll just add to the section below it.
 
-`this.route "Posts"` creates a route which will display the Posts template we created earlier.  This route will match when the URL path is /posts or just / (for convenience for us and our users).  
+`this.route "Posts"` creates a route which will display the Posts template we created earlier.  
 
-`waitOn` allows us to specify what data is needed for this template to be rendered.  In this case, we need to subscribe to the "posts" data feed we set up earlier on the server.
+`path` says this route will match when the URL path is /posts or just / (for convenience for us and our users).  
 
-`data` is where we set up the data to be used in the dynamic portion of our templates.  In this case, remember the `{{#each posts}}` loop in our `Posts` template?  This is where we populate the posts variable.  Once the data is available on the client (remember, we subscribed to the data, but that doens't mean that it's all been received), we get all the results into an array (actually a database cursor for efficiency, but `#each` is smart enough to handle that).
+`waitOn` allows us to specify what data is needed for this template to be rendered.  In this case, we need to subscribe to the "posts" data feed we just published on the server.
+
+`data` is where we set up the data to be used in the dynamic portion of our templates.  Remember the `{{#each posts}}` loop in our `Posts` template?  This is where we populate the posts variable.  Once the data is available on the client (remember, we subscribed to the data, but that doens't mean that it's all been received), we get all the results into an array (actually a database cursor for efficiency, but `#each` is smart enough to handle that).
+
+*It's quite important that the data attribute be a callback function and not the data itself.*
 
 Now, when the template renders, it will have all the data it needs.  Except, our database is empty.
 
@@ -225,6 +220,7 @@ You should see a listing of the posts you just manually created.
 
 ## Creating blog posts from your browser
 
+This is where I stopped.
 
 
 
@@ -232,7 +228,8 @@ You should see a listing of the posts you just manually created.
 
 
 
-STUFF BELOW HERE WAS REMOVED TO BE PUT BACK IN LATER
+
+# STUFF BELOW HERE WAS REMOVED TO BE PUT BACK IN LATER
 
 
 We'll also make another template with a form for creating a new blog post.  This one will be completely static:
