@@ -235,6 +235,7 @@ You should see a listing of the posts you just manually created.
 This is where I stopped.
 
 ## Automatically adding timestamps
+`> meteor add matb33:collection-hooks`
 
 ## Adding comments to a post
 
