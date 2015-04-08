@@ -31,8 +31,8 @@ and wait for it to say
 
 Now, point your web browser at http://localhost:3000/ and you should see a button press counting app.
 
-## Now delete all that crap
-We're going to start from scratch without all the crutches in place.
+## Now delete the sample app
+We're going to start from scratch
 ```bash
 > rm BlogMaker.js BlogMaker.css BlogMaker.html
 ```
@@ -51,5 +51,88 @@ server's database.  Obviously your real app can't allow for that, so why even ge
 The coffeescript package looks for files ending in `.coffee` and automatically compiles them to javascript before
 sending them to the client.  
 
-The iron:router package allows for handling of requests with different paths set (treating `/foo` and `/bar` differently).  Surprisingly this is not part of the core functionality of Meteor.
+The iron:router package allows for handling of requests with different paths set (treating `/foo` and `/bar`
+differently).  Surprisingly this is not part of the core functionality of Meteor.
+
+## Start with some HTML
+
+For files that only need to go to the web browser, we will put them in a subdirectory called `client`.  Meteor
+understands this name and won't load any files under a client directory into the server.  Vice-versa for
+subdirectories named `server`.  This is not only for subdirectories off the root directory, but anywhere in the app.
+
+```bash
+> mkdir -p client/html
+```
+
+Now create a file called `BlogMaker.html`.  Filenames in Meteor aren't important in general, but the extensions are.
+We start out just like a normal HTML file...
+
+```HTML
+<head>
+	<title>
+		BlogMaker
+	</title>
+</head>
+<body>
+  <!-- This will be filled in by the template selected by iron:router -->
+</body>
+```
+...but we leave the body empty.  This will get filled in depending on what page we want to display.  
+
+Next, we will create our first Meteor template.  A template is the primary unit of content in Meteor.  Most
+everything you do in Meteor will revolve around Templates.  A template looks just like any other HTML element
+and has one critical attribute, it's name.  In your code as well as your HTML you will refer to the template by this
+case-sensitive name.
+
+Our first template will be responsible for displaying the contents of a single blog post:
+```HTML
+<!-- Shows a single blog posting, just the id, title, and body - no comments or metadata -->
+<template name='Post'>
+	<div class='post_title'>{{title}}</div>
+	<div class='post_body'>{{body}}</div>
+</template>
+```
+All the curly braces are bound to look a little strange.  That's where the dynamic portions of the template come
+out.
+
+Templates in Meteor use a system called Spacebars
+(https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md) for inserting dynamic content into HTML.
+You can recognize Spacebars code by the double curly braces which begin and end each section.
+
+In this case, the section inside the Spacebars blocks are simply replaced with the value of the variable when the
+template is rendered.
+
+We'll also make another template with a form for creating a new blog post.  This one will be completely static:
+
+```HTML
+<!-- Form for creating a new blog post -->
+<template name='CreatePost'>
+	<form id='create_post'>
+		<input type='text' id='post_title'>
+		<textarea id='post_body'></textarea>
+		<input type='submit'>
+	</form>
+</template>
+```
+
+Now, we make a Template to tie both of these together to create a page which displays existing blog posts and allows creation of a new one.
+
+```HTML
+<template name='Posts'>
+    {{#each posts}}
+        {{>Post}}
+    {{/each}}
+    
+    {{>CreatePost}}
+</template>
+```
+
+In this case, our template expects us to provide it with an array of posts in the `posts` variable, which it will iterate over and for each element of the array, render an instance of the `Post` template we previously created.
+
+`>TemplateName` is the Spacebars instruction to render the template called `TemplateName`
+
+At the end, we also render a single instance of our `CreatePost` template to put our form at the bottom.
+
+
+
 
