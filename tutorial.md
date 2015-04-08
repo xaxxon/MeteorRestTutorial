@@ -102,6 +102,72 @@ You can recognize Spacebars code by the double curly braces which begin and end 
 In this case, the section inside the Spacebars blocks are simply replaced with the value of the variable when the
 template is rendered.
 
+
+
+Now, we make a Template to tie both of these together to create a page which displays existing blog posts and allows creation of a new one.
+
+```HTML
+<template name='Posts'>
+    {{#each posts}}
+        {{>Post}}
+    {{/each}}
+</template>
+```
+
+In this case, our template expects us to provide it with an array of posts in the `posts` variable, which it will iterate over and for each element of the array, render an instance of the `Post` template we previously created.
+
+`>TemplateName` is the Spacebars instruction to render the template called `TemplateName`
+
+## Meteor and databases
+Meteor uses MongoDB (https://www.mongodb.org/) for itsdatabase.  If you're not familiar with No-SQL databases, you
+basically just toss an object into them with whatever attributes you want on them.  There is no need for any schema.
+
+In Meteor, both the client and the server appear to have connections to the database.  However, on the client, it's *complicated*.  Obviously, you can't wait for the entire database to download to every client before your webpage shows content to the user.  It would take forever and the bandwidth usage would be astronomical.  To manage this, the client must subscribe to certain feeds the server provides.  This will populate the collection on the client side with only the necessary data.  However, getting the data to the client is asynchronous, so after you ask for the data to be sent to the client, you have to make sure it's done before you start using it.  
+
+Also, the client has no write access to the database.  Any writes need to go through sanity checks on the server, so we will create special remote-execution methods to allow the client to perform approved changes to the database.
+
+## Create server code to manage our database
+
+Mongo allows you to divide up your data into multiple collections.  We will have a collection called "posts" for our blog posts.  Since both our client and our server will need access to these collections, we need to define the variable somewhere they can both see.  Create a subdirectory called `shared`.
+```bash
+> mkdir shared
+```
+In a file called shared.coffee, add the following line:
+```coffeescript
+@posts_collection = new Mongo.Collection "posts"
+```
+This creates a variable called `posts_collection` that allows both the client and server access to the collection named `posts`.  While it is allowed, you should not put spaces in your collection names.  You're reading my tutorial, you'll just have to trust me on this one.
+
+(The @ sign before it is a coffeescript-ism that lets us use the variable in both the web browser and in an interactive server command prompt we'll use later - don't worry about the `@`, but it's not a typo)
+
+Now, in the server, let's use our newly created `posts_collection` variable:
+
+Create a `server` subdirectory
+```bash
+> mkdir server
+```
+Create a file `server.coffee` and add the following:
+
+```coffeescript
+Meteor.publish "posts", ->
+	posts_collection.find()
+```
+
+This creates a named datafeed that clients can subscribe to.  As we get started, when a client asks to get posts, we will send all of them.  Later we may choose to limit to some number, or further filter by author, but for now, we'll send them all.
+
+## Create client code to show the posts
+
+
+
+
+
+
+
+
+
+STUFF BELOW HERE WAS REMOVED TO BE PUT BACK IN LATER
+
+
 We'll also make another template with a form for creating a new blog post.  This one will be completely static:
 
 ```HTML
@@ -115,24 +181,16 @@ We'll also make another template with a form for creating a new blog post.  This
 </template>
 ```
 
-Now, we make a Template to tie both of these together to create a page which displays existing blog posts and allows creation of a new one.
 
-```HTML
-<template name='Posts'>
-    {{#each posts}}
-        {{>Post}}
-    {{/each}}
-    
-    {{>CreatePost}}
-</template>
+In the same file, add the following:
+
+```coffeescript
+Meteor.methods
+	create_post: (title, body)->
+		posts_collection.insert 
+			title: title
+			body: body
+
 ```
-
-In this case, our template expects us to provide it with an array of posts in the `posts` variable, which it will iterate over and for each element of the array, render an instance of the `Post` template we previously created.
-
-`>TemplateName` is the Spacebars instruction to render the template called `TemplateName`
-
-At the end, we also render a single instance of our `CreatePost` template to put our form at the bottom.
-
-
-
+This creates a method the client can call on the server to create a new post.  It takes parameters just like any local function, but all the information is passed back to the server and the server uses its database connection to actually make the change.
 
