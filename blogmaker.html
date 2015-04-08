@@ -9,7 +9,6 @@
 
 <!-- Shows a list of blogs -->
 <template name='Main'>
-	
 	<!-- Iterate through each post and display them with the Post template -->
 	{{#each posts}}
 		<!-- When the Post template is displayed, the context will be the current post in the #each loop -->
@@ -17,12 +16,11 @@
 	{{/each}}
 	
 	{{>CreatePost}}
-	
 </template>
 
-<!-- Shows a single blog posting -->
+<!-- Shows a single blog posting, just the id, title, and body - no comments or metadata -->
 <template name='Post'>
-	<a href="{{pathFor 'Post' _id=this._id}}">
+	<a href="{{pathFor 'PostDetails' _id=this._id}}">
 		<div class='post_id'>{{_id}}</div>
 		<div class='post_title'>{{title}}</div>
 		<div class='post_body'>{{body}}</div>
@@ -37,4 +35,35 @@
 		<input type='submit'>
 	</form>
 </template>
+
+<!-- Shows a single blog posting with all the details associated with it -->
+<template name='PostDetails'>
+	<a href="{{pathFor 'PostDetails' _id=this._id}}">
+		<div class='post_id'>{{post._id}}</div>
+		<div class='post_title'>{{post.title}}</div>
+		<div class='post_body'>{{post.body}}</div>
+	</a>
+	
+	{{#each comments}}
+		{{>Comment}}
+	{{/each}}
+	
+	{{>CreateComment}}
+</template>
+
+<!-- Display a single comment -->
+<template name='Comment'>
+	<div class='comment'>
+		{{body}}
+	</div>
+</template>
+
+<!-- Form for creating a new comment -->
+<template name='CreateComment'>
+	<form id='create_comment'>
+		<textarea id='comment_body'></textarea>
+		<input type='submit'>
+	</form>
+</template>
+
 

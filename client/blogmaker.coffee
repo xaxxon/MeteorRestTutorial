@@ -17,3 +17,10 @@ Template.CreatePost.events
 		#   the Meteor.methods method we created in the server code
 		Meteor.call "create_post", $('#post_title').val(), $('#post_body').val()
 		
+
+Template.CreateComment.events
+	'submit #create_comment': (event)->
+		event.preventDefault()
+		Meteor.call "create_comment", this.post._id, $('#comment_body').val()
+		
+		
