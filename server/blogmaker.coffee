@@ -1,6 +1,5 @@
 
 Meteor.publish "blog_posts", ->
-	console.log blog_posts.find().count()
 	blog_posts.find()
  
  

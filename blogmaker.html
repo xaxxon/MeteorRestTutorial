@@ -22,9 +22,11 @@
 
 <!-- Shows a single blog posting -->
 <template name='Post'>
-	<div class='post_id'>{{_id}}</div>
-	<div class='post_title'>{{title}}</div>
-	<div class='post_body'>{{body}}</div>
+	<a href="{{pathFor 'Post' _id=this._id}}">
+		<div class='post_id'>{{_id}}</div>
+		<div class='post_title'>{{title}}</div>
+		<div class='post_body'>{{body}}</div>
+	</a>
 </template>
 
 <!-- Form for creating a new blog post -->
