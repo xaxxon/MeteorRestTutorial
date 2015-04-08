@@ -1,0 +1,37 @@
+<head>
+	<title>
+		BlogMaker
+	</title>
+</head>
+<body>
+  <!-- This will be filled in by the template selected by iron:router -->
+</body>
+
+<!-- Shows a list of blogs -->
+<template name='Main'>
+	
+	<!-- Iterate through each post and display them with the Post template -->
+	{{#each posts}}
+		<!-- When the Post template is displayed, the context will be the current post in the #each loop -->
+		{{>Post}}
+	{{/each}}
+	
+	{{>CreatePost}}
+	
+</template>
+
+<!-- Shows a single blog posting -->
+<template name='Post'>
+	<div class='post_title'>{{title}}</div>
+	<div class='post_body'>{{body}}</div>
+</template>
+
+<!-- Form for creating a new blog post -->
+<template name='CreatePost'>
+	<form id='create_post'>
+		<input type='text' id='post_title'>
+		<textarea id='post_body'></textarea>
+		<input type='submit'>
+	</form>
+</template>
+
