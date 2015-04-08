@@ -42,7 +42,7 @@ We're going to start from scratch
 
 ## Remove the crutch packages
 ```bash
-> meteor remove insecure autopublish 
+> meteor remove insecure autopublish jquery
 ```
 These packages send all database data to the client all the time and allow the client full read/write access to the
 server's database.  Obviously your real app can't allow for that, so why even get started like that?
@@ -224,7 +224,60 @@ Make sure meteor is running, and point your web browser at http://localhost:3000
 
 ## Creating blog posts from your browser
 
-This is where I stopped.
+### Add the HTML
+
+Time to add the ability to create a new post frmo your browser.
+
+First, create a template in the same `client/html/BlogMaker.html` file as before for displaying the HTML form.  This template will be entirely static HTML.  You could put the HTML directly into the Posts template, but it's good to always be thinking about creating modular, re-useable templates.
+
+```HTML
+<!-- Form for creating a new blog post -->
+<template name='CreatePost'>
+	<form id='create_post'>
+		<input type='text' id='post_title'>
+		<textarea id='post_body'></textarea>
+		<input type='submit'>
+	</form>
+</template>
+```
+
+### Controlling client write access to the database
+Allowing a client to directly create and delete documents from our database would be dangerous.  A malicious user could delete someone else's posts.  Because of this, the client has no access to change the database.  Instead, we will introduce a set of explicit methods for the server to allow the client to call.  Eventually, these will contain the logic to make sure the client is allowed to make the change.
+
+in `server/server.coffee`, add the following:
+
+```coffeescript
+Meteor.methods
+	create_post: (title, body)->
+		posts_collection.insert 
+			title: title
+			body: body
+
+```
+This creates a method the client can call on the server to create a new post.  It takes parameters just like any local function would, but all the information is passed back to the server and the server uses its database connection to actually make the change.
+
+Now the client needs to actually call our newly made method when the user submits the HTML form.  In `client/client.coffee` add:
+
+Template.CreatePost.events
+	'submit #create_post': (event)-> 
+		event.preventDefault()
+		
+		# You can't insert directly into the database from the client, so call
+		#   the Meteor.methods method we created in the server code
+		Meteor.call "create_post", $('#post_title').val(), $('#post_body').val()
+
+
+This is an event handler.  Because it's tied to the CreateComment template, it will only handle events generated from that template.  The list of available events is here: http://docs.meteor.com/#/full/eventmaps
+
+In this handler, we call the method we just created in the server: `create_comment` and pass it the two parameters it expects, the post title and post body.  
+
+Note: We're using jQuery here (http://api.jquery.com/) to get the form values.   That's what the `$` refers to in the code above.  jQuery is available without requesting it be installed like we had to do for coffeescript and iron:router.  
+
+Go ahead and load up the page again and add a blog post to try out your new form.
+
+The super cool thing here is that when you submit the form, you don't have to do anything to make it show up in your browser - you don't even have to reload the page.  This is called reactive programming.  You write the view once and meteor takes care of updating it when the data changes.
+
+
 
 ## Automatically adding timestamps
 `> meteor add matb33:collection-hooks`
@@ -249,29 +302,10 @@ Nothing wrong with accounts-ui, specifically, but its customization is limited
 
 We'll also make another template with a form for creating a new blog post.  This one will be completely static:
 
-```HTML
-<!-- Form for creating a new blog post -->
-<template name='CreatePost'>
-	<form id='create_post'>
-		<input type='text' id='post_title'>
-		<textarea id='post_body'></textarea>
-		<input type='submit'>
-	</form>
-</template>
-```
 
 
 In the same file, add the following:
 
-```coffeescript
-Meteor.methods
-	create_post: (title, body)->
-		posts_collection.insert 
-			title: title
-			body: body
-
-```
-This creates a method the client can call on the server to create a new post.  It takes parameters just like any local function, but all the information is passed back to the server and the server uses its database connection to actually make the change.
 
 
 
@@ -316,4 +350,11 @@ If you want to clear out all your posts, pass the empty object into the `remove(
 posts_collection.remove({})
 ```
 
+
+```coffeescript
+Template.CreateComment.events
+	'submit #create_comment': (event)->
+		event.preventDefault()
+		Meteor.call "create_comment", this.post._id, $('#comment_body').val()
+```
 
