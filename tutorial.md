@@ -175,11 +175,11 @@ This looks a little complicated, but it's not too bad.
 
 `this.route "Posts"` creates a route which will display the Posts template we created earlier.  
 
-`path` says this route will match when the URL path is /posts or just / (for convenience for us and our users).  
+`path:` says this route will be used when the URL is / or /posts.  
 
-`waitOn` allows us to specify what data is needed for this template to be rendered.  In this case, we need to subscribe to the "posts" data feed we just published on the server.
+`waitOn:` allows us to specify what data is needed for this template to be rendered.  In this case, we need to subscribe to the "posts" data feed we just published on the server.
 
-`data` is where we set up the data to be used in the dynamic portion of our templates.  Remember the `{{#each posts}}` loop in our `Posts` template?  This is where we populate the posts variable.  Once the data is available on the client (remember, we subscribed to the data, but that doens't mean that it's all been received), we get all the results into an array (actually a database cursor for efficiency, but `#each` is smart enough to handle that).
+`data:` is where we set up the data to be used in the dynamic portion of our templates.  Remember the `{{#each posts}}` loop in our `Posts` template?  This is where we populate the posts variable.  Once the data is available on the client (remember, we subscribed to the data, but that doens't mean that it's all been received), we get all the results into an array (actually a database cursor for efficiency, but `#each` is smart enough to handle that).
 
 *It's quite important that the data attribute be a callback function and not the data itself.*
 
