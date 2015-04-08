@@ -57,6 +57,21 @@ sending them to the client.
 The iron:router package allows for handling of requests with different paths set (treating `/foo` and `/bar`
 differently).  Surprisingly this is not part of the core functionality of Meteor.
 
+## Let's build a blogging system
+Seems like every tutorial builds a blog these days, but it has clearly defined objects and interactions which makes it good for showing how the different parts of Meteor work together.
+
+## Defining a blog post
+Meteor uses Mongo as its database.  Mongo is a No-SQL database and its documents are not defined by a schema the way SQL entries are.  However, we still need to decide what a blog post will look like so we know what attributes to expect.  For starters, let's say a blog post is comprised of a title and a body.  
+
+## Adding a blog post to the database by hand.
+gives us something to display later so we know our code is working
+while meteor is running
+`> meteor mongo` 
+
+`meteor:PRIMARY> db.posts.insert({title: "My first post", body: "Meteor is super fun to program in!"})`
+
+`WriteResult({ "nInserted" : 1 })`
+
 ## Start with some HTML
 
 For files that only need to go to the web browser, we will put them in a subdirectory called `client`.  Meteor
@@ -100,7 +115,7 @@ Templates in Meteor use a system called Spacebars
 You can recognize Spacebars code by the double curly braces which begin and end each section.
 
 In this case, the section inside the Spacebars blocks are simply replaced with the value of the variable when the
-template is rendered.
+template is rendered.  Having the names in the template match the attribute names in the document we added to the database earlier makes things easier, but isn't required.  
 
 This template only shows one blog posting, though.  We want a page that shows them all.  Create another template in the same file:
 
