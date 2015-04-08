@@ -60,19 +60,42 @@ differently).  Surprisingly this is not part of the core functionality of Meteor
 ## Let's build a blogging system
 Seems like every tutorial builds a blog these days, but it has clearly defined objects and interactions which makes it good for showing how the different parts of Meteor work together.
 
+## Quick intro to MongoDB
+Meteor uses Mongo as its database.  Mongo is a No-SQL database and its data are not defined by a schema the way SQL data are.  Instead, it stores unstructured documents which are essentially a collection of key/value pairs.  Mongo allows you to group related documents into a collection.  The documents in a collection don't have to have the same keys, though they frequently do.
+
+If you're familiar with SQL, for the purpose of this tutorial it's reasonable to think of collections as tables (though without a schema) and documents as rows in those tables.  
+
 ## Defining a blog post
-Meteor uses Mongo as its database.  Mongo is a No-SQL database and its documents are not defined by a schema the way SQL entries are.  However, we still need to decide what a blog post will look like so we know what attributes to expect.  For starters, let's say a blog post is comprised of a title and a body.  
+Let's start simple and say a blog post has only two attributes: a title and a body.  Those will be our document key names, and we'll put them in a collection named `posts`.  
+
+Since Mongo documents are unstructured, it will be quite easy for us to add more fields (like the author and a timestsamp) onto a blog post later, as it doesn't involve editing any schemas. 
 
 ## Adding a blog post to the database by hand.
-gives us something to display later so we know our code is working
-while meteor is running
+Before we write any code, let's pre-populate the database with a blog post or two by hand so when our code is done, we have something to display.
+
+First, make sure meteor is running:
+```bash
+> meteor
+```
+and leaving that up in a terminal window.   Then, in another window: 
+
 `> meteor mongo` 
+
+and at the prompt, type in:
 
 `meteor:PRIMARY> db.posts.insert({title: "My first post", body: "Meteor is super fun to program in!"})`
 
+and you should see:
+
 `WriteResult({ "nInserted" : 1 })`
 
-## Start with some HTML
+feel free to add as many as you want.  
+
+`meteor:PRIMARY> db.posts.find().count()` to see how many you've added
+
+`meteor:PRIMARY> db.posts.remove({})` if you mess up and want to clear all the documents from a collection
+
+## Now let's write some HTML
 
 For files that only need to go to the web browser, we will put them in a subdirectory called `client`.  Meteor
 understands this directory name and won't load any files under a client directory into the server.  Vice-versa for
@@ -82,7 +105,8 @@ subdirectories named `server`.  `client` and `server` subdirectories can be used
 > mkdir -p client/html
 ```
 
-Now create a file called `BlogMaker.html`.  Filenames in Meteor aren't important in general, but the extensions are.
+Now create a file called `client/BlogMaker.html`.  Filenames in Meteor aren't important in general, but the extensions often are.
+
 We start out just like a normal HTML file...
 
 ```HTML
@@ -108,16 +132,16 @@ Our first template will be responsible for displaying the contents of a single b
 	<div class='post_body'>{{body}}</div>
 </template>
 ```
-Mostly normal HTML, but the curly braces are bound to look a little strange.  That's where the dynamic portions of the template are.
+As you can see, it's mostly normal HTML, but the curly braces are bound to look a little strange.  That's where the dynamic portions of the template are.
 
 Templates in Meteor use a system called Spacebars
 (https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md) for inserting dynamic content into HTML.
 You can recognize Spacebars code by the double curly braces which begin and end each section.
 
 In this case, the section inside the Spacebars blocks are simply replaced with the value of the variable when the
-template is rendered.  Having the names in the template match the attribute names in the document we added to the database earlier makes things easier, but isn't required.  
+template is rendered.  Having the names in the template match the attribute names in the document we added to the database earlier makes things easier, but isn't required.
 
-This template only shows one blog posting, though.  We want a page that shows them all.  Create another template in the same file:
+Our template only shows one blog posting, though.  We want a page that shows them all.  Create another template in the same file:
 
 ```HTML
 <template name='Posts'>
@@ -129,17 +153,13 @@ This template only shows one blog posting, though.  We want a page that shows th
 
 In this case, our template expects us to provide it with an array of posts in the `posts` variable.  Meteor will iterate over and each element of the array and render an instance of the `Post` template we previously created.
 
-`>TemplateName` is the Spacebars instruction to render the template called `TemplateName`
+`{{>TemplateName}}` is the Spacebars instruction to render the template called `TemplateName`
 
-## Meteor and databases
-Meteor uses MongoDB (https://www.mongodb.org/) for its database.  If you're not familiar with No-SQL databases, you
-basically just toss an object into them with whatever attributes you want on them.  There is no need for any schema.
+## Database connections
 
 In Meteor, both the client and the server appear to have connections to the database.  On the server, it works just as you'd expect.  However, on the client, it's *complicated*.  Obviously, you can't send the entire database to the every client - it would take forever and the bandwidth usage would be astronomical.  To manage this, the client must subscribe to certain feeds the server provides.  This will populate the collection on the client side with only the necessary data for the templates to be rendered.  The thing to keep in mind, however, is that getting the data to the client is asynchronous.  After you ask for the data to be sent to the client, you have to make sure it's done before you start using it.  
 
-## Create server code to manage our database
-
-Mongo divides data into multiple sections called "collections".  We will have a collection called "posts" for our blog posts.  Since both our client and our server will need access to these collections, we need to define the variable somewhere they can both see.  Create a subdirectory called `shared`.  (Shared is not a special name, but any directory that't not "client" or "server" is sent to both, shared ends up being shared.)
+Since both our client and our server will need access to the collections in our database, the code to access our collections needs to be available to both.  Create a subdirectory called `shared`.  (Shared is not a special name, but any directory that't not "client" or "server" is sent to both, so `shared` ends up being shared.)
 
 ```bash
 > mkdir shared
@@ -150,7 +170,7 @@ In a file called `shared/shared.coffee`, add the following line:
 ```
 This creates a variable called `posts_collection` that allows both the client and server access to the collection named `posts`.  While it is allowed, you should not put spaces in your collection names.  You're reading my tutorial, you'll just have to trust me on this one.  It is a PITA in certain circumstances.
 
-(The @ sign before it is a coffeescript-ism that lets us use the variable in both the web browser and in an interactive server command prompt we'll use later - don't worry about the `@`, but it's not a typo)
+(The @ sign before it is a coffeescript-ism that lets us use the variable in both the web browser and in an interactive server command prompt we'll use later - so don't worry about the `@`, but it's not a typo)
 
 Now, in the server, let's use our newly created `posts_collection` variable:
 
@@ -165,12 +185,12 @@ Meteor.publish "posts", ->
 	posts_collection.find()
 ```
 
-This creates a named datafeed that clients can subscribe to.  As we get started, when a client asks to get posts, we will send all of them.  Later we may choose to limit to some number or filter by author, but for now, we'll send everything.
+This creates a named data feed that clients can subscribe to.  As we get started, when a client subscribes posts, we will send all of the posts to them.  Later we may choose to limit the results to some number or filter by author, but for now, we'll send everything.  
 
 ## Create client code to show the posts
 
 ### Iron Router
-Iron Router is how you map URL paths to your templates.  We want `/paths` to be the url to show all the Posts. Create a file called `shared/router.coffee` with the following:
+Iron Router is how you map URL paths to your templates.  We want `http://localhost:3000/paths` to be the url to show all the Posts. We'll also make `http://localhost:3000/` a synonym for this for convenience.  Create a file called `shared/router.coffee` with the following:
 
 ```coffeescript
 Router.map ->
@@ -196,54 +216,11 @@ This looks a little complicated, but it's not too bad.
 
 `data:` is where we set up the data to be used in the dynamic portion of our templates.  Remember the `{{#each posts}}` loop in our `Posts` template?  This is where we populate the posts variable.  Once the data is available on the client (remember, we subscribed to the data, but that doens't mean that it's all been received), we get all the results into an array (actually a database cursor for efficiency, but `#each` is smart enough to handle that).
 
-*It's quite important that the data attribute be a callback function and not the data itself.*
+*It's important that the data attribute be a callback function and not the data itself.*
 
-Now, when the template renders, it will have all the data it needs.  Except, our database is empty.
+Now, when the template renders, it will have all the data it needs. 
 
-## meteor.shell
-Meteor's shell command is really cool.  It gives you an interactive javascript prompt into your *running* server process.  This means you have access to everything your server code has access to, but you can poke around in real time.
-
-Right now, we need some blog posts so our client can actually render stuff for us.  In another terminal (remember, meteor still has to be running), run the following:
-
-```bash
-> meteor shell
-```
-
-Note: if you get the error: `Server unavailable (waiting to reconnect)` that means you're not running meteor (the server) right now.  Go to another terminal and type:
-
-```bash
-> meteor
-```
-
-and try running `meteor shell` again.
-
-Now, let's look around in the database a little:
-
-```javascript
-posts_collection.find().count()
-```
-should return 0 - because you haven't created any posts yet.  `find()` without any parameters returns every document in the collection.  
-
-```javascript
-posts_collection.insert({title: 'test title', body: 'test body'})
-```
-It should print an alpha-numeric string.  That's the ID of the newly created document.  Every document has a unique ID that can be used to easily and quickly refer to it.  
-
-Create a few more if you want, but when you're done, pull up your web browser and let's try it out: http://localhost:3000/posts
-
-```javascript
-posts_collection.find().count()
-```
-Should now return 1 (or more if you added more)
-
-If you want to clear out all your posts, pass the empty object into the `remove()` method on the collection
-```javascript
-posts_collection.remove({})
-```
-
-
-
-You should see a listing of the posts you just manually created.
+Make sure meteor is running, and point your web browser at http://localhost:3000/posts and you should see the post you manually inserted earlier.
 
 ## Creating blog posts from your browser
 
@@ -295,4 +272,48 @@ Meteor.methods
 
 ```
 This creates a method the client can call on the server to create a new post.  It takes parameters just like any local function, but all the information is passed back to the server and the server uses its database connection to actually make the change.
+
+
+
+## meteor.shell
+Meteor's shell command is really cool.  It gives you an interactive javascript prompt into your *running* server process.  This means you have access to everything your server code has access to, but you can poke around in real time.
+
+Right now, we need some blog posts so our client can actually render stuff for us.  In another terminal (remember, meteor still has to be running), run the following:
+
+```bash
+> meteor shell
+```
+
+Note: if you get the error: `Server unavailable (waiting to reconnect)` that means you're not running meteor (the server) right now.  Go to another terminal and type:
+
+```bash
+> meteor
+```
+
+and try running `meteor shell` again.
+
+Now, let's look around in the database a little:
+
+```javascript
+posts_collection.find().count()
+```
+should return 0 - because you haven't created any posts yet.  `find()` without any parameters returns every document in the collection.  
+
+```javascript
+posts_collection.insert({title: 'test title', body: 'test body'})
+```
+It should print an alpha-numeric string.  That's the ID of the newly created document.  Every document has a unique ID that can be used to easily and quickly refer to it.  
+
+Create a few more if you want, but when you're done, pull up your web browser and let's try it out: http://localhost:3000/posts
+
+```javascript
+posts_collection.find().count()
+```
+Should now return 1 (or more if you added more)
+
+If you want to clear out all your posts, pass the empty object into the `remove()` method on the collection
+```javascript
+posts_collection.remove({})
+```
+
 
