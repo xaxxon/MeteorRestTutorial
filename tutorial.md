@@ -216,6 +216,18 @@ It should print an alpha-numeric string.  That's the ID of the newly created doc
 
 Create a few more if you want, but when you're done, pull up your web browser and let's try it out: http://localhost:3000/posts
 
+```javascript
+posts_collection.find().count()
+```
+Should now return 1 (or more if you added more)
+
+If you want to clear out all your posts, pass the empty object into the `remove()` method on the collection
+```javascript
+posts_collection.remove({})
+```
+
+
+
 You should see a listing of the posts you just manually created.
 
 ## Creating blog posts from your browser
