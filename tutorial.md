@@ -303,6 +303,50 @@ A great package for handling dates is called moment.js.  http://momentjs.com/
 
 `> meteor add momentjs:moment`
 
+Restart meteor and in another terminal pull up 
+
+`> meteor shell` 
+
+and insert a document:
+
+`> posts_collection.insert({"title": "test", "body": "test"})`
+
+note the ID returned (for this example we'll assume it's "Abc123"), and now select it:
+
+`> posts_collection.findOne("Abc123")`
+
+and you'll see it has a `createdAt` field even though you didn't add it.  You can see how moment.js works (make sure you installed it) by typing in:
+
+> moment(posts_collection.findOne("Abc123").createdAt).fromNow()
+
+And you should see something like:
+
+`'a minute ago'`
+
+depending on how long ago you actually inserted the record.  Moment.js accepts a wide variety of date formats, but the javascript Date.now() method we used in our server code happens to be the default format moment.js wants.
+
+Since we don't want to show the raw number (milliseconds since January 1, 1970), we'll need a helper to format it to a string that we want.
+
+```coffeescript
+Template.PostDetails.helpers
+	created_time: (time)-> if time then moment(time).fromNow() else "unknown
+```
+
+and then call it from within our template:
+
+```HTML
+<div class='created_at'>{{created_time post.createdAt}}</div>
+```
+
+This is how you pass a parameter to a template.  
+
+If you think your helper may be useful from your entire project, you can make it global by using `Template.registerHelper(name, function)` as documented here; http://docs.meteor.com/#/full/template_registerhelper
+
+
+
+
+ -- delete this - just for my reference while writing this
+`> moment(posts_collection.findOne("Y25AhS9qzdFCe3Etx").createdAt).fromNow()`
 
 
 
