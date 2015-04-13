@@ -345,10 +345,6 @@ If you think your helper may be useful from your entire project, you can make it
 
 
 
- -- delete this - just for my reference while writing this
-`> moment(posts_collection.findOne("Y25AhS9qzdFCe3Etx").createdAt).fromNow()`
-
-
 
 ## Adding comments to a post
 
