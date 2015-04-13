@@ -280,7 +280,31 @@ The super cool thing here is that when you submit the form, you don't have to do
 
 
 ## Automatically adding timestamps
+One of the important things to associate with your blog posts is when they were created.  Since MongoDB doesn't have an explicit schema, there's no need to change anything in the database, we'll just start adding our documents with a new field, and make sure to handle older-style documents without the field.
+
+We don't want to trust the client to tell us when the blog post was added - it's error prone and able to be set to anything by a 'creative' user.  Instead, let's add some server-side code to add a timestamp whenever a document is created.  
+
+To do that, add the collection hooks package:
+
 `> meteor add matb33:collection-hooks`
+
+and add the following to `server/server.coffee`
+
+```coffeescript
+posts_collection.before.insert (userId, doc)->
+    doc.createdAt = Date.now()
+```
+
+It does exactly what it says - before an insert, it adds the attribute `createdAt` to the document and sets the value to the current date (which includes the time).
+
+Now, let's update the template.
+
+A great package for handling dates is called moment.js.  http://momentjs.com/
+
+`> meteor add momentjs:moment`
+
+
+
 
 ## Adding comments to a post
 
