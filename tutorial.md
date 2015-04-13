@@ -329,22 +329,50 @@ Since we don't want to show the raw number (milliseconds since January 1, 1970),
 
 ```coffeescript
 Template.PostDetails.helpers
-	created_time: (time)-> if time then moment(time).fromNow() else "unknown
+	created_time_phrase: (time)-> if time then moment(time).fromNow() else "unknown"
 ```
 
 and then call it from within our template:
 
 ```HTML
-<div class='created_at'>{{created_time post.createdAt}}</div>
+<div class='created_at'>{{created_time_phrase post.createdAt}}</div>
 ```
 
 This is how you pass a parameter to a template.  
 
 If you think your helper may be useful from your entire project, you can make it global by using `Template.registerHelper(name, function)` as documented here; http://docs.meteor.com/#/full/template_registerhelper
 
+You'll notice this doesn't make the time "reactive".  After the page is loaded, it doesn't change from "1 minute ago" to "2 minutes ago" a minute later.  This is because none of the Meteor data is changing, only the current time is changing.  
 
+In order to tell Meteor we want to update this, we need to create our own reactive data source.  Since the time is constantly changing and we don't want to overload the browser with work, we will tell it to just recheck once a second.  
 
+The Tracker package (http://docs.meteor.com/#/full/tracker) is how Meteor internally tracks and manages reactive data sources, but exposes it for us to use, as well.  First, you create a new Tracker object
 
+```coffeescript
+timeTick = new Tracker.Dependency()
+```
+
+Then, once a second (1000 milliseconds), we tell Meteor the data has changed.  
+
+```coffeescript
+Meteor.setInterval(
+  ->
+  	timeTick.changed()
+  1000)
+```
+
+There's no need to use Meteor's setInterval method (http://docs.meteor.com/#/full/timers) instead of the plain javascript one, but it's a good habit to be in, as it makes sure your environment is what you would want it to be when doing more complicated things.
+
+Now, we just write a helper that, somewhere in its body, says it depends on timeTick.
+
+```coffeescript
+Template.PostDetails.helpers
+	created_time_phrase: (date)-> (date)->
+	timeTick.depend()
+	if date? then moment(date).fromNow() else "unknown"
+```
+
+Now, your page will begin to automatically update the created time phrase every second, though the return value will only change once a minute since the moment.js `timeFrom()` method only uses minutes in its returned string.
 
 ## Adding comments to a post
 
