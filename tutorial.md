@@ -374,9 +374,41 @@ Template.PostDetails.helpers
 
 Now, your page will begin to automatically update the created time phrase every second, though the return value will only change once a minute since the moment.js `timeFrom()` method only uses minutes in its returned string.
 
+## Adding user accounts
+
+Now let's add user accounts.  We are going to cheat a little bit here by using some built-in UI elements for allowing users to log-in and log-out.  We'll go over what you need to make your own afterwards.   
+
+`> meteor add accounts-ui`
+
+This will add both the base account packages as well as the UI packages.
+
+Now in the body segment, add
+
+```HTML
+<body>
+{{> loginButtons}}
+</body>
+```
+
+While all the functionality behind this UI can be implemented yourself, it's tedious work.   Everything is documented (http://docs.meteor.com/#/full/accounts_api) and for password authentication, you'll want to look at `Accounts.createUser` and `Accounts.onCreateUser` for creating new accounts (client- and server-side calls respectively), and `Meteor.loginWithPassword` and `Meteor.onLogin` for loging in existing users.  The `Account` methos are well named and organized, so it's easy to find what you want and how to use them.
+
+For simplicity's sake, let's add some code to allow simple usernames instead of requiring a valid email address.  At the bottom of `client/client.coffee`, add:
+
+Accounts.ui.config({
+  passwordSignupFields: "USERNAME_ONLY"
+});
+
+
+
+Go ahead and create an account - click "sign in" then "create account".  Enter a username and a password with confirmation and hit "Create Account".  There are much more powerful things you can do with account creation, but for now the goal is to learn how to use account information in your app, not focus on the actual account creation process.
+
+Account information is automatically available pretty much everywhere you'd want it to be.
+
+
 ## Adding comments to a post
 
-## Adding user accounts
+
+
 
 ### accounts-ui
 Nothing wrong with accounts-ui, specifically, but its customization is limited
