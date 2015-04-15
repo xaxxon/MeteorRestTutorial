@@ -376,9 +376,9 @@ Now, your page will begin to automatically update the created time phrase every 
 
 ## Adding user accounts
 
-Now let's add user accounts.  We are going to cheat a little bit here by using some built-in UI elements for allowing users to log-in and log-out.  We'll go over what you need to make your own afterwards.   
+Now let's add user accounts.  There are many ways to authenticate an account, but we will stick to simple passwords.  Also, we are going to cheat a little bit here by using some built-in UI elements for allowing users to log-in and log-out.  We'll go over what you need to make your own afterwards, but it's tedious. 
 
-`> meteor add accounts-ui`
+`> meteor add accounts-password accounts-ui`
 
 This will add both the base account packages as well as the UI packages.
 
