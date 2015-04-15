@@ -14,4 +14,19 @@ Template.CreateComment.events
 		event.preventDefault()
 		Meteor.call "create_comment", this.post._id, $('#comment_body').val()
 		
+
+timeTick = new Tracker.Dependency()
+	
+fromNowReactive = (date)->
+	timeTick.depend()
+	if date? then moment(date).fromNow() else "unknown"
 		
+Template.PostDetails.helpers
+	created_time_description: (date)-> fromNowReactive(date)
+	created_timestamp: (date)-> if date? then moment(date).format("dddd, MMMM Do YYYY, h:mm:ss a") else "unknown"
+	
+	
+# At the bottom of the client code
+Accounts.ui.config({
+  passwordSignupFields: "USERNAME_ONLY"
+});

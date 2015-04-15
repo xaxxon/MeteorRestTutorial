@@ -4,6 +4,11 @@ Meteor.publish "posts", ->
 	
 Meteor.publish "comments", ->
 	comments_collection.find()
+	
+Meteor.startup ->
+	posts_collection.before.insert (userId, doc)->
+	    doc.createdAt = Date.now()
+	
  
 
 Meteor.methods
@@ -12,6 +17,7 @@ Meteor.methods
 		posts_collection.insert 
 			title: title
 			body: body
+			user_id: @userId
 		
 	create_comment: (post_id, body)->
 		comments_collection.insert 

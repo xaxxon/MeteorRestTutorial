@@ -5,6 +5,7 @@
 </head>
 <body>
   <!-- This will be filled in by the template selected by iron:router -->
+  {{> loginButtons }}
 </body>
 
 <!-- Shows a list of blogs -->
@@ -39,7 +40,7 @@
 <!-- Shows a single blog posting with all the details associated with it -->
 <template name='PostDetails'>
 	<a href="{{pathFor 'PostDetails' _id=this._id}}">
-		<div class='post_id'>{{post._id}}</div>
+		<div class='post_id'>{{post._id}} - {{created_time_description post.createdAt}}</div>
 		<div class='post_title'>{{post.title}}</div>
 		<div class='post_body'>{{post.body}}</div>
 	</a>
