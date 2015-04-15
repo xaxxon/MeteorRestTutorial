@@ -402,8 +402,21 @@ Accounts.ui.config({
 
 Go ahead and create an account - click "sign in" then "create account".  Enter a username and a password with confirmation and hit "Create Account".  There are much more powerful things you can do with account creation, but for now the goal is to learn how to use account information in your app, not focus on the actual account creation process.
 
-Account information is automatically available pretty much everywhere you'd want it to be.
+Account information is automatically available pretty much everywhere you'd want it to be.  When it's provided to you on the server, you don't have to worry about whether you can trust it.  
 
+In Meteor.methods, `this` is set to an object which includes `this.userId`, the alphanumeric database ID representing the user making the call.  It's `null` if the user isn't logged in.
+
+Let's use this to store the user when creating a blog entry by adding a single line in `server/server.coffee`
+
+```coffeescript
+	create_post: (title, body)->
+		posts_collection.insert 
+			title: title
+			body: body
+			user_id: @userId # This is all we added
+```
+
+In a template, you can always refer to the current user 
 
 ## Adding comments to a post
 
@@ -427,10 +440,7 @@ Nothing wrong with accounts-ui, specifically, but its customization is limited
 We'll also make another template with a form for creating a new blog post.  This one will be completely static:
 
 
-
 In the same file, add the following:
-
-
 
 
 ## meteor.shell
@@ -481,4 +491,10 @@ Template.CreateComment.events
 		event.preventDefault()
 		Meteor.call "create_comment", this.post._id, $('#comment_body').val()
 ```
+
+## Resources
+
+https://www.meteor.com/
+http://docs.meteor.com/#/full/
+
 
