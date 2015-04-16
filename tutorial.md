@@ -232,6 +232,27 @@ In this case, our template expects us to provide it with an array of posts in th
 
 `{{>TemplateName}}` is the Spacebars instruction to render the template called `TemplateName`
 
+## Run your code and see your blog post
+
+`> meteor`
+
+and point your browser at http://localhost:3000
+
+## Check out and view code at this point
+
+To view code already written up to this point, first, clone this repository, then checkout the tag `Section1`
+
+If you don't have git installed, either follow the directions in your OS, or go here:
+
+http://git-scm.com/downloads
+
+```bash
+> git clone https://github.com/xaxxon/MeteorRestTutorial.git
+
+> git checkout section_1
+```
+
+There's a little bit of extra code in `server/server.coffee` to make sure there is a blog post for you to look at in case your database was empty.
 
 ## Creating blog posts from your browser
 
