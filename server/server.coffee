@@ -4,11 +4,15 @@ Meteor.publish "posts", ->
 	
 Meteor.publish "comments", ->
 	comments_collection.find()
+
+Meteor.publish "user_posts", (user_id = @userId)->
+	posts_collection.find(user_id: user_id)
 	
 Meteor.startup ->
 	posts_collection.before.insert (userId, doc)->
 	    doc.createdAt = Date.now()
 	
+
  
 
 Meteor.methods
