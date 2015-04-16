@@ -1,6 +1,8 @@
 # Meteor Tutorial
 ## Learning Without Training Wheels
 
+<div class='warning'>test</div>
+
 There are a lot of meteor tutorials out there, but once you get through them, 
 you're left with an application that can't grow.  It sends too much data around,
 it lets anyone access anything, and there is no real organization to expand upon.  
@@ -45,17 +47,8 @@ We're going to start from scratch
 > meteor remove insecure autopublish jquery
 ```
 These packages send all database data to the client all the time and allow the client full read/write access to the
-server's database.  Obviously your real app can't allow for that, so why even get started like that?
+server's database.  Obviously your real app can't allow for that, so why even get started like that?  Also, jquery package isn't needed for using jquery, either.
 
-## Add the packages we want
-```bash
-> meteor add coffeescript iron:router
-```
-The coffeescript package looks for files ending in `.coffee` and automatically compiles them to javascript before
-sending them to the client.  
-
-The iron:router package allows for handling of requests with different paths set (treating `/foo` and `/bar`
-differently).  Surprisingly this is not part of the core functionality of Meteor.
 
 ## Let's build a blogging system
 Seems like every tutorial builds a blog these days, but it has clearly defined objects and interactions which makes it good for showing how the different parts of Meteor work together.
@@ -95,11 +88,95 @@ feel free to add as many as you want.
 
 `meteor:PRIMARY> db.posts.remove({})` if you mess up and want to clear all the documents from a collection
 
+
+Make sure meteor is running, and point your web browser at http://localhost:3000/posts and you should see the post you manually inserted earlier.
+
+
+## Accessing the database from code
+
+In Meteor, both the client and the server appear to have the database locally.  On the server, it works just as you'd expect - you actually do have full access to the authoritative database.  On the client, however, it's *complicated*.  Obviously, you can't send the entire database to the every client - it would take forever and the bandwidth usage would be astronomical.  To manage this, the client must subscribe to certain feeds the server provides in order to intelligently populate the local database cache.  This will provide the collection on the client side with only the necessary data for the templates to be rendered.  The thing to keep in mind, however, is that getting the data to the client is asynchronous.  After you ask for the data to be sent to the client, you have to make sure it's done before you start using it.  
+
+Since both our client and our server will need access to the collections in our database, the code to access our collections needs to be available to both.  We will put this code in a directory named `shared`.  (`shared` is not a special name, but any directory that's not named "client" or "server" is sent to both, so `shared` ends up being shared.)
+
+```bash
+> mkdir shared
+```
+In a file called `shared/shared.coffee`, add the following line:
+```coffeescript
+@posts_collection = new Mongo.Collection "posts"
+```
+This creates a variable called `posts_collection` that allows both the client and server access to the collection named `posts`.  While it is allowed, you should not put spaces in your collection names.  You're reading my tutorial, you'll just have to trust me on this one.  It is a PITA in certain circumstances.
+
+(The @ sign before it is a coffeescript-ism that lets us use the variable in both the web browser and in an interactive server command prompt we'll use later - so don't worry about the `@`, but it's not a typo)
+
+## Server-side code
+
+```bash
+> meteor add coffeescript
+```
+The coffeescript package looks for files ending in `.coffee` and automatically compiles them to javascript before
+sending them to the client.  
+
+
+Now, in the server, let's use our newly created `posts_collection` variable:
+
+Create a `server` subdirectory
+```bash
+> mkdir server
+```
+
+Create a file `server/server.coffee`  and add the following:
+
+```coffeescript
+Meteor.publish "posts", ->
+	posts_collection.find()
+```
+
+This creates a named data feed that clients can subscribe to.  As we get started, when a client subscribes posts, we will send all of the posts to them.  Later we may choose to limit the results to some number or filter by author, but for now, we'll send everything.  
+
+
+## Create client code to show the posts
+
+### Iron Router
+
+```bash
+> meteor add iron:router
+```
+
+Iron Router is how you map URL paths to your templates.  We want `http://localhost:3000/posts` to be the url to show all the Posts. We'll also make `http://localhost:3000/` a synonym to `/posts` for convenience.  Create a file called `shared/router.coffee` with the following:
+
+```coffeescript
+Router.map ->
+	# This template is rendered when the user doesn't specify a path
+	this.route "Posts",
+		path: ['/', '/posts']
+		waitOn: ->
+			Meteor.subscribe "posts"
+		data: ->
+			if this.ready()
+				posts: posts_collection.find()
+```
+
+This looks a little complicated, but it's not too bad.
+
+`Router.map ->` just gets us started.  As you add more routes, you'll just add to the section below it.
+
+`this.route "Posts"` creates a route which will display the HTML template we will create next.  
+
+`path:` says this route will be used when the URL is / or /posts.  
+
+`waitOn:` allows us to specify what data is needed for this template to be rendered.  In this case, we need to subscribe to the "posts" data feed we just published on the server.
+
+`data:` is where we set up the data to be used in the dynamic portion of our templates.  Our HTML we write next will expect an array of our blog posts named `posts`.  This is where we put the data into it.  Technically `posts` is a database cursor which can be used to get the posts.
+
+*It's important that the data attribute be a callback function and not the data itself.*
+
+Now, when the template renders, it will have all the data it needs. 
+
+
 ## Now let's write some HTML
 
-For files that only need to go to the web browser, we will put them in a subdirectory called `client`.  Meteor
-understands this directory name and won't load any files under a client directory into the server.  Vice-versa for
-subdirectories named `server`.  `client` and `server` subdirectories can be used anywhere in the directory structure to limit access to certain content.
+For files that only need to go to the web browser, we will put them in a subdirectory called `client`. 
 
 ```bash
 > mkdir -p client/html
@@ -124,7 +201,7 @@ We start out just like a normal HTML file...
 Next, we will create our first Meteor template.  A template is the primary unit of content in Meteor.  Most
 everything you do in Meteor will revolve around templates.  Creating a template looks just like any other HTML element and has one critical attribute: it's name.  In your code as well as your HTML you will refer to the template by this case-sensitive name.
 
-Our first template will be responsible for displaying the contents of a single blog post:
+Our first template will be responsible for displaying the contents of a single blog post.  Add the following to the bottom of `client/html/blogmaker.html`
 ```HTML
 <!-- Shows a single blog posting, the title, and body -->
 <template name='Post'>
@@ -155,72 +232,6 @@ In this case, our template expects us to provide it with an array of posts in th
 
 `{{>TemplateName}}` is the Spacebars instruction to render the template called `TemplateName`
 
-## Database connections
-
-In Meteor, both the client and the server appear to have connections to the database.  On the server, it works just as you'd expect.  However, on the client, it's *complicated*.  Obviously, you can't send the entire database to the every client - it would take forever and the bandwidth usage would be astronomical.  To manage this, the client must subscribe to certain feeds the server provides.  This will populate the collection on the client side with only the necessary data for the templates to be rendered.  The thing to keep in mind, however, is that getting the data to the client is asynchronous.  After you ask for the data to be sent to the client, you have to make sure it's done before you start using it.  
-
-Since both our client and our server will need access to the collections in our database, the code to access our collections needs to be available to both.  Create a subdirectory called `shared`.  (Shared is not a special name, but any directory that't not "client" or "server" is sent to both, so `shared` ends up being shared.)
-
-```bash
-> mkdir shared
-```
-In a file called `shared/shared.coffee`, add the following line:
-```coffeescript
-@posts_collection = new Mongo.Collection "posts"
-```
-This creates a variable called `posts_collection` that allows both the client and server access to the collection named `posts`.  While it is allowed, you should not put spaces in your collection names.  You're reading my tutorial, you'll just have to trust me on this one.  It is a PITA in certain circumstances.
-
-(The @ sign before it is a coffeescript-ism that lets us use the variable in both the web browser and in an interactive server command prompt we'll use later - so don't worry about the `@`, but it's not a typo)
-
-Now, in the server, let's use our newly created `posts_collection` variable:
-
-Create a `server` subdirectory
-```bash
-> mkdir server
-```
-Create a file `server/server.coffee`  and add the following:
-
-```coffeescript
-Meteor.publish "posts", ->
-	posts_collection.find()
-```
-
-This creates a named data feed that clients can subscribe to.  As we get started, when a client subscribes posts, we will send all of the posts to them.  Later we may choose to limit the results to some number or filter by author, but for now, we'll send everything.  
-
-## Create client code to show the posts
-
-### Iron Router
-Iron Router is how you map URL paths to your templates.  We want `http://localhost:3000/paths` to be the url to show all the Posts. We'll also make `http://localhost:3000/` a synonym for this for convenience.  Create a file called `shared/router.coffee` with the following:
-
-```coffeescript
-Router.map ->
-	# This template is rendered when the user doesn't specify a path
-	this.route "Posts",
-		path: ['/', '/posts']
-		waitOn: ->
-			Meteor.subscribe "posts"
-		data: ->
-			if this.ready()
-				posts: posts_collection.find()
-```
-
-This looks a little complicated, but it's not too bad.
-
-`Router.map ->` just gets us started.  As you add more routes, you'll just add to the section below it.
-
-`this.route "Posts"` creates a route which will display the Posts template we created earlier.  
-
-`path:` says this route will be used when the URL is / or /posts.  
-
-`waitOn:` allows us to specify what data is needed for this template to be rendered.  In this case, we need to subscribe to the "posts" data feed we just published on the server.
-
-`data:` is where we set up the data to be used in the dynamic portion of our templates.  Remember the `{{#each posts}}` loop in our `Posts` template?  This is where we populate the posts variable.  Once the data is available on the client (remember, we subscribed to the data, but that doens't mean that it's all been received), we get all the results into an array (actually a database cursor for efficiency, but `#each` is smart enough to handle that).
-
-*It's important that the data attribute be a callback function and not the data itself.*
-
-Now, when the template renders, it will have all the data it needs. 
-
-Make sure meteor is running, and point your web browser at http://localhost:3000/posts and you should see the post you manually inserted earlier.
 
 ## Creating blog posts from your browser
 
@@ -406,7 +417,7 @@ Account information is automatically available pretty much everywhere you'd want
 
 In Meteor.methods, `this` is set to an object which includes `this.userId`, the alphanumeric database ID representing the user making the call.  It's `null` if the user isn't logged in.
 
-Let's use this to store the user when creating a blog entry by adding a single line in `server/server.coffee`
+Let's use this to store the user when creating a blog entry by adding a single line to our Meteor.methods in `server/server.coffee`
 
 ```coffeescript
 	create_post: (title, body)->
@@ -416,7 +427,22 @@ Let's use this to store the user when creating a blog entry by adding a single l
 			user_id: @userId # This is all we added
 ```
 
-In a template, you can always refer to the current user 
+In a template, you can always refer to the current user with `{{ currentUser }}`.  This means you can check to see if there is a user logged in and display the username easily:
+
+```HTML
+{{ #if currentUser }}
+  {{ currentUser.username }}
+{{ /if }}
+```
+
+User information is also available inside publish methods.  To publish only a single user's posts (defaulting to our own), we can now add to `server/server.coffee`
+
+```coffeescript
+Meteor.publish "user_posts", (user_id = @userId)->
+	polls.find(user_id: user_id) 
+```
+
+
 
 ## Adding comments to a post
 
@@ -492,9 +518,17 @@ Template.CreateComment.events
 		Meteor.call "create_comment", this.post._id, $('#comment_body').val()
 ```
 
+
+ Meteor
+understands this directory name and won't load any files under a client directory into the server.  Vice-versa for
+subdirectories named `server`.  `client` and `server` subdirectories can be used anywhere in the directory structure to limit access to certain content.
+
+
+
 ## Resources
 
 https://www.meteor.com/
 http://docs.meteor.com/#/full/
+
 
 
