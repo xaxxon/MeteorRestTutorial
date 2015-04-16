@@ -101,7 +101,7 @@ feel free to add as many as you want.
 Make sure meteor is running, and point your web browser at http://localhost:3000/posts and you should see the post you manually inserted earlier.
 
 
-## Database connections
+## Accessing the database from code
 
 In Meteor, both the client and the server appear to have the database locally.  On the server, it works just as you'd expect - you actually do have full access to the authoritative database.  On the client, however, it's *complicated*.  Obviously, you can't send the entire database to the every client - it would take forever and the bandwidth usage would be astronomical.  To manage this, the client must subscribe to certain feeds the server provides in order to intelligently populate the local database cache.  This will provide the collection on the client side with only the necessary data for the templates to be rendered.  The thing to keep in mind, however, is that getting the data to the client is asynchronous.  After you ask for the data to be sent to the client, you have to make sure it's done before you start using it.  
 
@@ -117,6 +117,8 @@ In a file called `shared/shared.coffee`, add the following line:
 This creates a variable called `posts_collection` that allows both the client and server access to the collection named `posts`.  While it is allowed, you should not put spaces in your collection names.  You're reading my tutorial, you'll just have to trust me on this one.  It is a PITA in certain circumstances.
 
 (The @ sign before it is a coffeescript-ism that lets us use the variable in both the web browser and in an interactive server command prompt we'll use later - so don't worry about the `@`, but it's not a typo)
+
+## Server-side code
 
 Now, in the server, let's use our newly created `posts_collection` variable:
 
@@ -171,9 +173,7 @@ Now, when the template renders, it will have all the data it needs.
 
 ## Now let's write some HTML
 
-For files that only need to go to the web browser, we will put them in a subdirectory called `client`.  Meteor
-understands this directory name and won't load any files under a client directory into the server.  Vice-versa for
-subdirectories named `server`.  `client` and `server` subdirectories can be used anywhere in the directory structure to limit access to certain content.
+For files that only need to go to the web browser, we will put them in a subdirectory called `client`. 
 
 ```bash
 > mkdir -p client/html
@@ -515,9 +515,17 @@ Template.CreateComment.events
 		Meteor.call "create_comment", this.post._id, $('#comment_body').val()
 ```
 
+
+ Meteor
+understands this directory name and won't load any files under a client directory into the server.  Vice-versa for
+subdirectories named `server`.  `client` and `server` subdirectories can be used anywhere in the directory structure to limit access to certain content.
+
+
+
 ## Resources
 
 https://www.meteor.com/
 http://docs.meteor.com/#/full/
+
 
 
