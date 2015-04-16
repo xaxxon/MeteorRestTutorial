@@ -232,6 +232,12 @@ In this case, our template expects us to provide it with an array of posts in th
 
 `{{>TemplateName}}` is the Spacebars instruction to render the template called `TemplateName`
 
+## Run your code and see your blog post
+
+`> meteor`
+
+and point your browser at http://localhost:3000
+
 ## Check out and view code at this point
 
 To view code already written up to this point, first, clone this repository, then checkout the tag `Section1`
@@ -246,7 +252,7 @@ http://git-scm.com/downloads
 > git checkout tags/Section1
 ```
 
-(make sure you've added the database entry by hand or you won't see anything)
+There's a little bit of extra code in `server/server.coffee` to make sure there is a blog post for you to look at in case your database was empty.
 
 ## Creating blog posts from your browser
 
