@@ -49,15 +49,6 @@ We're going to start from scratch
 These packages send all database data to the client all the time and allow the client full read/write access to the
 server's database.  Obviously your real app can't allow for that, so why even get started like that?  Also, jquery package isn't needed for using jquery, either.
 
-## Add the packages we want (TODO: Move iron:router down to client section)
-```bash
-> meteor add coffeescript iron:router
-```
-The coffeescript package looks for files ending in `.coffee` and automatically compiles them to javascript before
-sending them to the client.  
-
-The iron:router package allows for handling of requests with different paths set (treating `/foo` and `/bar`
-differently).  Surprisingly this is not part of the core functionality of Meteor.
 
 ## Let's build a blogging system
 Seems like every tutorial builds a blog these days, but it has clearly defined objects and interactions which makes it good for showing how the different parts of Meteor work together.
@@ -120,6 +111,13 @@ This creates a variable called `posts_collection` that allows both the client an
 
 ## Server-side code
 
+```bash
+> meteor add coffeescript
+```
+The coffeescript package looks for files ending in `.coffee` and automatically compiles them to javascript before
+sending them to the client.  
+
+
 Now, in the server, let's use our newly created `posts_collection` variable:
 
 Create a `server` subdirectory
@@ -140,6 +138,11 @@ This creates a named data feed that clients can subscribe to.  As we get started
 ## Create client code to show the posts
 
 ### Iron Router
+
+```bash
+> meteor add iron:router
+```
+
 Iron Router is how you map URL paths to your templates.  We want `http://localhost:3000/posts` to be the url to show all the Posts. We'll also make `http://localhost:3000/` a synonym to `/posts` for convenience.  Create a file called `shared/router.coffee` with the following:
 
 ```coffeescript
