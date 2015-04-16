@@ -124,7 +124,7 @@ We start out just like a normal HTML file...
 Next, we will create our first Meteor template.  A template is the primary unit of content in Meteor.  Most
 everything you do in Meteor will revolve around templates.  Creating a template looks just like any other HTML element and has one critical attribute: it's name.  In your code as well as your HTML you will refer to the template by this case-sensitive name.
 
-Our first template will be responsible for displaying the contents of a single blog post:
+Our first template will be responsible for displaying the contents of a single blog post.  Add the following to the bottom of `client/html/blogmaker.html`
 ```HTML
 <!-- Shows a single blog posting, the title, and body -->
 <template name='Post'>
