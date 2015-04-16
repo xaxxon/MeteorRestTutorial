@@ -232,6 +232,21 @@ In this case, our template expects us to provide it with an array of posts in th
 
 `{{>TemplateName}}` is the Spacebars instruction to render the template called `TemplateName`
 
+## Check out and view code at this point
+
+To view code already written up to this point, first, clone this repository, then checkout the tag `Section1`
+
+If you don't have git installed, either follow the directions in your OS, or go here:
+
+http://git-scm.com/downloads
+
+```bash
+> git clone https://github.com/xaxxon/MeteorRestTutorial.git
+
+> git checkout tags/Section1
+```
+
+(make sure you've added the database entry by hand or you won't see anything)
 
 ## Creating blog posts from your browser
 
