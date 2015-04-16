@@ -249,7 +249,7 @@ http://git-scm.com/downloads
 ```bash
 > git clone https://github.com/xaxxon/MeteorRestTutorial.git
 
-> git checkout tags/Section1
+> git checkout section_1
 ```
 
 There's a little bit of extra code in `server/server.coffee` to make sure there is a blog post for you to look at in case your database was empty.
