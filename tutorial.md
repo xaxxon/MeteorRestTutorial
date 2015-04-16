@@ -406,7 +406,7 @@ Account information is automatically available pretty much everywhere you'd want
 
 In Meteor.methods, `this` is set to an object which includes `this.userId`, the alphanumeric database ID representing the user making the call.  It's `null` if the user isn't logged in.
 
-Let's use this to store the user when creating a blog entry by adding a single line in `server/server.coffee`
+Let's use this to store the user when creating a blog entry by adding a single line to our Meteor.methods in `server/server.coffee`
 
 ```coffeescript
 	create_post: (title, body)->
@@ -416,7 +416,22 @@ Let's use this to store the user when creating a blog entry by adding a single l
 			user_id: @userId # This is all we added
 ```
 
-In a template, you can always refer to the current user 
+In a template, you can always refer to the current user with `{{ currentUser }}`.  This means you can check to see if there is a user logged in and display the username easily:
+
+```HTML
+{{ #if currentUser }}
+  {{ currentUser.username }}
+{{ /if }}
+```
+
+User information is also available inside publish methods.  To publish only a single user's posts (defaulting to our own), we can now add to `server/server.coffee`
+
+```coffeescript
+Meteor.publish "user_posts", (user_id = @userId)->
+	polls.find(user_id: user_id) 
+```
+
+
 
 ## Adding comments to a post
 
