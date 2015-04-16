@@ -1,71 +1,20 @@
 <head>
-	<title>
-		BlogMaker
-	</title>
+    <title>
+        BlogMaker
+    </title>
 </head>
 <body>
   <!-- This will be filled in by the template selected by iron:router -->
-  {{> loginButtons }}
-  {{currentUser.username}}
 </body>
 
-<!-- Shows a list of blogs -->
-<template name='Posts'>
-	<!-- Iterate through each post and display them with the Post template -->
-	{{#each posts}}
-		<!-- When the Post template is displayed, the context will be the current post in the #each loop -->
-		{{>Post}}
-	{{/each}}
-	
-	{{>CreatePost}}
-</template>
-
-<!-- Shows a single blog posting, just the id, title, and body - no comments or metadata -->
+<!-- Shows a single blog posting, the title, and body -->
 <template name='Post'>
-	<a href="{{pathFor 'PostDetails' _id=this._id}}">
-		<div class='post_id'>{{_id}}</div>
-		<div class='post_title'>{{title}}</div>
-		<div class='post_body'>{{body}}</div>
-	</a>
+    <div class='post_title'>{{title}}</div>
+    <div class='post_body'>{{body}}</div>
 </template>
 
-<!-- Form for creating a new blog post -->
-<template name='CreatePost'>
-	<form id='create_post'>
-		<input type='text' id='post_title'>
-		<textarea id='post_body'></textarea>
-		<input type='submit'>
-	</form>
+<template name='Posts'>
+    {{#each posts}}
+        {{>Post}}
+    {{/each}}
 </template>
-
-<!-- Shows a single blog posting with all the details associated with it -->
-<template name='PostDetails'>
-	<a href="{{pathFor 'PostDetails' _id=this._id}}">
-		<div class='post_id'>{{post._id}} - {{created_time_description post.createdAt}}</div>
-		<div class='post_title'>{{post.title}}</div>
-		<div class='post_body'>{{post.body}}</div>
-	</a>
-	
-	{{#each comments}}
-		{{>Comment}}
-	{{/each}}
-	
-	{{>CreateComment}}
-</template>
-
-<!-- Display a single comment -->
-<template name='Comment'>
-	<div class='comment'>
-		{{body}}
-	</div>
-</template>
-
-<!-- Form for creating a new comment -->
-<template name='CreateComment'>
-	<form id='create_comment'>
-		<textarea id='comment_body'></textarea>
-		<input type='submit'>
-	</form>
-</template>
-
-

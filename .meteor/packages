@@ -7,7 +7,3 @@
 meteor-platform
 coffeescript
 iron:router
-accounts-ui
-accounts-password
-matb33:collection-hooks
-momentjs:moment
