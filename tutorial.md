@@ -42,7 +42,7 @@ We're going to start from scratch
 
 ## Remove the crutch packages
 ```bash
-> meteor remove insecure autopublish jquery
+> meteor remove insecure autopublish
 ```
 These packages send all database data to the client all the time and allow the client full read/write access to the
 server's database.  Obviously your real app can't allow for that, so why even get started like that?  Also, jquery package isn't needed for using jquery, either.
